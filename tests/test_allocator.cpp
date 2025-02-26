@@ -2,6 +2,7 @@
 #include <customalloc/CustomAlloc.h>
 #include <vector>
 #include <algorithm>
+#include <cstring>
 
 // Test fixture for CustomAlloc tests
 class CustomAllocTest : public ::testing::Test {
@@ -19,7 +20,7 @@ protected:
 TEST_F(CustomAllocTest, BasicAllocation) {
     // Allocate memory
     const size_t size = 128;
-    void* ptr = _malloc(size);
+    void *ptr = _malloc(size);
 
     // Verify allocation succeeded
     ASSERT_NE(ptr, nullptr);
@@ -34,12 +35,12 @@ TEST_F(CustomAllocTest, BasicAllocation) {
 // Test multiple allocations
 TEST_F(CustomAllocTest, MultipleAllocations) {
     const int numAllocs = 100;
-    std::vector<void*> pointers;
+    std::vector<void *> pointers;
 
     // Perform multiple allocations of different sizes
     for (int i = 0; i < numAllocs; i++) {
-        size_t size = 64 * (i + 1);  // Different sizes
-        void* ptr = _malloc(size);
+        size_t size = 64 * (i + 1); // Different sizes
+        void *ptr = _malloc(size);
         ASSERT_NE(ptr, nullptr);
         pointers.push_back(ptr);
 
@@ -49,7 +50,7 @@ TEST_F(CustomAllocTest, MultipleAllocations) {
 
     // Free the allocations in random order to test fragmentation handling
     std::random_shuffle(pointers.begin(), pointers.end());
-    for (void* ptr : pointers) {
+    for (void *ptr: pointers) {
         _free(ptr);
     }
 }
@@ -58,7 +59,7 @@ TEST_F(CustomAllocTest, MultipleAllocations) {
 TEST_F(CustomAllocTest, Reallocation) {
     // Allocate initial memory
     const size_t initialSize = 256;
-    void* ptr = _malloc(initialSize);
+    void *ptr = _malloc(initialSize);
     ASSERT_NE(ptr, nullptr);
 
     // Fill memory with pattern
@@ -66,7 +67,7 @@ TEST_F(CustomAllocTest, Reallocation) {
 
     // Reallocate to larger size
     const size_t newSize = 512;
-    void* newPtr = _realloc(ptr, newSize);
+    void *newPtr = _realloc(ptr, newSize);
     ASSERT_NE(newPtr, nullptr);
 
     // Validate first part of memory still has our pattern
@@ -81,24 +82,24 @@ TEST_F(CustomAllocTest, Reallocation) {
 
 // Test allocation of zero bytes
 TEST_F(CustomAllocTest, ZeroSizeAllocation) {
-    void* ptr = _malloc(0);
+    void *ptr = _malloc(0);
     ASSERT_EQ(ptr, nullptr);
 }
 
 // Test reallocation with null pointer (should act like malloc)
 TEST_F(CustomAllocTest, ReallocWithNullPointer) {
     const size_t size = 128;
-    void* ptr = _realloc(nullptr, size);
+    void *ptr = _realloc(nullptr, size);
     ASSERT_NE(ptr, nullptr);
     _free(ptr);
 }
 
 // Test reallocation to zero size (should act like free)
 TEST_F(CustomAllocTest, ReallocToZeroSize) {
-    void* ptr = _malloc(128);
+    void *ptr = _malloc(128);
     ASSERT_NE(ptr, nullptr);
 
-    void* result = _realloc(ptr, 0);
+    void *result = _realloc(ptr, 0);
     ASSERT_EQ(result, nullptr);
     // No need to free ptr as realloc(ptr, 0) should have freed it
 }
@@ -107,7 +108,7 @@ TEST_F(CustomAllocTest, ReallocToZeroSize) {
 TEST_F(CustomAllocTest, LargeAllocation) {
     // 1 MB allocation
     const size_t size = 1024 * 1024;
-    void* ptr = _malloc(size);
+    void *ptr = _malloc(size);
     ASSERT_NE(ptr, nullptr);
 
     // Write to entire allocation to ensure it's valid

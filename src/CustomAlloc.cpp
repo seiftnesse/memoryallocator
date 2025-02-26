@@ -1,15 +1,14 @@
 #include "customalloc/CustomAlloc.h"
 
-#include <cstddef>
-#include <climits>
+#include <cstddef>   // for size_t
+#include <climits>   // for INT_MAX
+#include <cstdint>   // for uintptr_t and uint64_t
 
 #define HEAP_SIZE (64*1024*1024)
 #define BLOCK_SIZE 0x1000
 
 typedef unsigned char uint8_t;
-// typedef unsigned long uintptr_t;
 typedef unsigned long long uint64_t;
-
 
 static uint8_t memory[HEAP_SIZE];
 static int heap_initialized = 0;
@@ -23,7 +22,6 @@ typedef struct segment {
 
 static segment_t *segments = NULL;
 static segment_t *last_free_segment = NULL;
-
 
 static void EnsureHeapInitialized() {
     if (!heap_initialized) {
@@ -46,18 +44,15 @@ void HeapInit(void *buf, size_t size) {
     heap_initialized = 1;
 }
 
-
 static segment_t *SearchFree(segment_t *s, int size) {
     segment_t *best_fit = NULL;
     int best_size = INT_MAX;
-
 
     while (s) {
         if (s->is_free && s->size >= size) {
             if (s->size < best_size) {
                 best_fit = s;
                 best_size = s->size;
-
 
                 if (s->size == size) {
                     return s;
@@ -70,7 +65,6 @@ static segment_t *SearchFree(segment_t *s, int size) {
     return best_fit;
 }
 
-
 static int GetNumBlock(size_t size) {
     if (size > INT_MAX - BLOCK_SIZE) {
         return INT_MAX / BLOCK_SIZE;
@@ -79,35 +73,28 @@ static int GetNumBlock(size_t size) {
     return (size + BLOCK_SIZE - 1) / BLOCK_SIZE;
 }
 
-
 static segment_t *CutSegment(segment_t *s, int size_to_cut) {
     if (s->size <= size_to_cut) {
         return s;
     }
 
-
     uintptr_t addr = (uintptr_t) s;
     addr += (s->size - size_to_cut) * BLOCK_SIZE;
     segment_t *result = (segment_t *) addr;
 
-
     s->size -= size_to_cut;
-
 
     result->size = size_to_cut;
     result->prev = s;
     result->next = s->next;
 
-
     if (s->next) s->next->prev = result;
     s->next = result;
-
 
     result->is_free = s->is_free;
 
     return result;
 }
-
 
 static segment_t *MergeSegment(segment_t *first_segment, segment_t *second_segment) {
     if (!first_segment || !second_segment) {
@@ -121,7 +108,6 @@ static segment_t *MergeSegment(segment_t *first_segment, segment_t *second_segme
     first_segment->size += second_segment->size;
 
     first_segment->next = second_segment->next;
-
 
     if (second_segment->next) {
         second_segment->next->prev = first_segment;
@@ -139,7 +125,6 @@ static segment_t *PtrToSegment(void *ptr) {
     if (!ptr) return NULL;
     return (segment_t *) ((char *) ptr - sizeof(segment_t));
 }
-
 
 static void *_memcpy(void *dest, const void *src, size_t bytes) {
     if (!dest || !src) return dest;
@@ -167,14 +152,12 @@ static void *_memcpy(void *dest, const void *src, size_t bytes) {
     return dest;
 }
 
-
 void *_malloc(size_t size) {
     if (size == 0) {
         return NULL;
     }
 
     EnsureHeapInitialized();
-
 
     int required_blocks = GetNumBlock(size + sizeof(segment_t));
 
@@ -188,9 +171,7 @@ void *_malloc(size_t size) {
         return NULL;
     }
 
-
     it->is_free = 0;
-
 
     if (it->size > required_blocks + 1) {
         segment_t *remaining = CutSegment(it, it->size - required_blocks);

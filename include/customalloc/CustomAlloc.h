@@ -5,6 +5,8 @@
 #ifndef CUSTOMALLOC_H
 #define CUSTOMALLOC_H
 
+#include <cstddef>  // for size_t
+
 // Custom memory allocator functions
 void HeapInit(void *buf, size_t size);
 

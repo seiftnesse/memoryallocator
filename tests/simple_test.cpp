@@ -2,6 +2,8 @@
 #include <cstring>
 #include <iostream>
 
+#include <cstddef>
+
 #define TEST_ASSERT(condition, message) \
 do { \
 if (!(condition)) { \
@@ -13,18 +15,18 @@ return 1; \
 int main() {
     // Test 1: Basic allocation
     const size_t size = 1024;
-    void* ptr = _malloc(size);
+    void *ptr = _malloc(size);
     TEST_ASSERT(ptr != nullptr, "Memory allocation failed");
 
     // Test 2: Write to allocated memory
     memset(ptr, 0xAA, size);
 
     // Test 3: Reallocation
-    void* new_ptr = _realloc(ptr, size * 2);
+    void *new_ptr = _realloc(ptr, size * 2);
     TEST_ASSERT(new_ptr != nullptr, "Memory reallocation failed");
 
     // Test 4: Check if content was preserved during reallocation
-    unsigned char* bytes = static_cast<unsigned char*>(new_ptr);
+    unsigned char *bytes = static_cast<unsigned char *>(new_ptr);
     for (size_t i = 0; i < size; i++) {
         TEST_ASSERT(bytes[i] == 0xAA, "Memory content was not preserved during reallocation");
     }
@@ -34,7 +36,7 @@ int main() {
 
     // Test 6: Multiple allocations and frees
     const int num_allocations = 100;
-    void* ptrs[num_allocations];
+    void *ptrs[num_allocations];
 
     for (int i = 0; i < num_allocations; i++) {
         ptrs[i] = _malloc((i + 1) * 128);
