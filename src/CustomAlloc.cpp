@@ -392,12 +392,18 @@ static void *SegmentToPtr(segment_t *s) {
         return NULL;
     }
 
-    // Return aligned pointer after segment metadata
+    // Calculate pointer after segment metadata
     uintptr_t addr = (uintptr_t) s + sizeof(segment_t);
     uintptr_t original_addr = addr;
 
-    // Use POINTER_ALIGNMENT for platform-specific behavior
-    addr = (addr + POINTER_ALIGNMENT - 1) & ~(POINTER_ALIGNMENT - 1);
+    // Always ensure 8-byte alignment for macOS
+#ifdef __APPLE__
+    // Force 8-byte alignment specifically for macOS
+    addr = (addr + 8 - 1) & ~(uintptr_t)(8 - 1);
+#else
+    // Use POINTER_ALIGNMENT for other platforms
+    addr = (addr + POINTER_ALIGNMENT - 1) & ~(uintptr_t) (POINTER_ALIGNMENT - 1);
+#endif
 
     if (original_addr != addr) {
         HEAP_LOG("Adjusted user pointer for alignment: %p -> %p\n", (void*)original_addr, (void*)addr);
@@ -416,7 +422,15 @@ static segment_t *PtrToSegment(void *ptr) {
 
     // Calculate segment address based on platform-specific alignment
     uintptr_t addr = (uintptr_t) ptr;
-    addr &= ~(POINTER_ALIGNMENT - 1); // Round down to alignment boundary
+
+#ifdef __APPLE__
+    // Force 8-byte alignment for macOS
+    addr &= ~(uintptr_t)(8 - 1); // Round down to 8-byte boundary
+#else
+    // Use POINTER_ALIGNMENT for other platforms
+    addr &= ~(uintptr_t) (POINTER_ALIGNMENT - 1); // Round down to alignment boundary
+#endif
+
     addr -= sizeof(segment_t);
     segment_t *s = (segment_t *) addr;
 
