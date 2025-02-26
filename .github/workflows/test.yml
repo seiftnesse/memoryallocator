@@ -24,7 +24,7 @@ jobs:
           cmake -B ${{github.workspace}}/build 
           -DCMAKE_BUILD_TYPE=${{matrix.build_type}} 
           -DBUILD_TESTS=ON 
-          -DCMAKE_CXX_STANDARD=14
+          -DCMAKE_CXX_STANDARD=17
 
       - name: Build
         run: cmake --build ${{github.workspace}}/build --config ${{matrix.build_type}}
@@ -51,18 +51,19 @@ jobs:
           cmake -B ${{github.workspace}}/build 
           -DCMAKE_BUILD_TYPE=Debug 
           -DBUILD_TESTS=ON 
-          -DCMAKE_CXX_STANDARD=14
+          -DCMAKE_CXX_STANDARD=17
 
       - name: Build
         run: cmake --build ${{github.workspace}}/build --config Debug
 
-      - name: Run Valgrind
+      - name: Run Valgrind on Test Executables
         working-directory: ${{github.workspace}}/build
         run: |
-          find . -type f -executable -not -path "*/\.*" | while read executable; do
+          # Only run Valgrind on actual test executables in tests directory
+          find ./tests -type f -executable -not -path "*/\.*" | while read executable; do
             if [ -x "$executable" ] && [ -f "$executable" ]; then
               echo "Running Valgrind on $executable"
-              valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --verbose "$executable"
+              valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --error-exitcode=1 "$executable"
             fi
           done
 
