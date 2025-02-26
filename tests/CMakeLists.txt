@@ -1,6 +1,9 @@
 find_package(GTest QUIET)
 
-if(NOT GTest_FOUND)
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+if (NOT GTest_FOUND)
     include(FetchContent)
     FetchContent_Declare(
             googletest
@@ -10,7 +13,7 @@ if(NOT GTest_FOUND)
     # For Windows: Prevent overriding the parent project's compiler/linker settings
     set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
     FetchContent_MakeAvailable(googletest)
-endif()
+endif ()
 
 add_executable(test_allocator test_allocator.cpp)
 target_link_libraries(test_allocator PRIVATE customalloc GTest::gtest_main)

@@ -20,16 +20,16 @@ target_include_directories(customalloc
 
 # Enable testing
 option(BUILD_TESTS "Build the tests" ON)
-if(BUILD_TESTS)
+if (BUILD_TESTS)
     enable_testing()
     add_subdirectory(tests)
-endif()
+endif ()
 
 # Build examples
 option(BUILD_EXAMPLES "Build the examples" ON)
-if(BUILD_EXAMPLES)
+if (BUILD_EXAMPLES)
     add_subdirectory(examples)
-endif()
+endif ()
 
 # Installation settings
 include(GNUInstallDirs)
