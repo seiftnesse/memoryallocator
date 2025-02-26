@@ -6,10 +6,10 @@
 
 #define TEST_ASSERT(condition, message) \
 do { \
-if (!(condition)) { \
-std::cerr << "Assertion failed: " << message << std::endl; \
-return 1; \
-} \
+    if (!(condition)) { \
+        std::cerr << "Assertion failed: " << message << std::endl; \
+        return 1; \
+    } \
 } while (0)
 
 int main() {
