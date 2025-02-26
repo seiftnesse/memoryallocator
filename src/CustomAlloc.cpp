@@ -43,14 +43,6 @@ void HeapSetLogFunction(void (*log_func)(const char *, ...)) {
 #define SMALL_POOL_SIZE (1024*1024)  // 1MB small block pool
 #define SEGMENT_MAGIC 0xCAFEBABE  // Magic value for valid segments
 
-#define POINTER_ALIGNMENT ALIGNMENT  // Default to ALIGNMENT (16)
-
-// For macOS-specific alignment fix
-#ifdef __APPLE__
-#undef POINTER_ALIGNMENT
-#define POINTER_ALIGNMENT 8  // Use 8-byte alignment on macOS to pass tests
-#endif
-
 // Memory pools
 static uint8_t memory[HEAP_SIZE];
 static uint8_t small_pool[SMALL_POOL_SIZE]; // Separate pool for small allocations
@@ -392,18 +384,10 @@ static void *SegmentToPtr(segment_t *s) {
         return NULL;
     }
 
-    // Calculate pointer after segment metadata
+    // Return aligned pointer after segment metadata
     uintptr_t addr = (uintptr_t) s + sizeof(segment_t);
     uintptr_t original_addr = addr;
-
-    // Always ensure 8-byte alignment for macOS
-#ifdef __APPLE__
-    // Force 8-byte alignment specifically for macOS
-    addr = (addr + 8 - 1) & ~(uintptr_t)(8 - 1);
-#else
-    // Use POINTER_ALIGNMENT for other platforms
-    addr = (addr + POINTER_ALIGNMENT - 1) & ~(uintptr_t) (POINTER_ALIGNMENT - 1);
-#endif
+    addr = (addr + ALIGNMENT - 1) & ~(ALIGNMENT - 1);
 
     if (original_addr != addr) {
         HEAP_LOG("Adjusted user pointer for alignment: %p -> %p\n", (void*)original_addr, (void*)addr);
@@ -413,24 +397,16 @@ static void *SegmentToPtr(segment_t *s) {
     return (void *) addr;
 }
 
-// And in PtrToSegment as well:
+// Convert memory pointer back to segment
 static segment_t *PtrToSegment(void *ptr) {
     if (!ptr) {
         HEAP_LOG("Cannot convert NULL pointer to segment\n");
         return NULL;
     }
 
-    // Calculate segment address based on platform-specific alignment
+    // Calculate segment address based on alignment and metadata size
     uintptr_t addr = (uintptr_t) ptr;
-
-#ifdef __APPLE__
-    // Force 8-byte alignment for macOS
-    addr &= ~(uintptr_t)(8 - 1); // Round down to 8-byte boundary
-#else
-    // Use POINTER_ALIGNMENT for other platforms
-    addr &= ~(uintptr_t) (POINTER_ALIGNMENT - 1); // Round down to alignment boundary
-#endif
-
+    addr &= ~(ALIGNMENT - 1); // Round down to alignment boundary
     addr -= sizeof(segment_t);
     segment_t *s = (segment_t *) addr;
 
