@@ -2,9 +2,9 @@ name: Test
 
 on:
   push:
-    branches: [ main ]
+    branches: [ master ]
   pull_request:
-    branches: [ main ]
+    branches: [ master ]
 
 jobs:
   test:
@@ -17,7 +17,7 @@ jobs:
         build_type: [Debug, Release]
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Configure CMake
         run: >
@@ -32,6 +32,39 @@ jobs:
       - name: Test
         working-directory: ${{github.workspace}}/build
         run: ctest -C ${{matrix.build_type}} --output-on-failure
+
+      - name: Print Error Details
+        if: failure()
+        run: cat ${{github.workspace}}/build/CMakeFiles/CMakeError.log || true
+
+  valgrind:
+    name: Valgrind Memory Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Valgrind
+        run: sudo apt-get update && sudo apt-get install -y valgrind
+
+      - name: Configure CMake
+        run: >
+          cmake -B ${{github.workspace}}/build 
+          -DCMAKE_BUILD_TYPE=Debug 
+          -DBUILD_TESTS=ON 
+          -DCMAKE_CXX_STANDARD=14
+
+      - name: Build
+        run: cmake --build ${{github.workspace}}/build --config Debug
+
+      - name: Run Valgrind
+        working-directory: ${{github.workspace}}/build
+        run: |
+          find . -type f -executable -not -path "*/\.*" | while read executable; do
+            if [ -x "$executable" ] && [ -f "$executable" ]; then
+              echo "Running Valgrind on $executable"
+              valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --verbose "$executable"
+            fi
+          done
 
       - name: Print Error Details
         if: failure()
