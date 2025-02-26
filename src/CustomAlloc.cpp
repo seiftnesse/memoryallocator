@@ -2,13 +2,10 @@
 
 #include <cstddef>   // for size_t
 #include <climits>   // for INT_MAX
-#include <cstdint>   // for uintptr_t and uint64_t
+#include <cstdint>   // for uintptr_t, uint8_t and uint64_t
 
 #define HEAP_SIZE (64*1024*1024)
 #define BLOCK_SIZE 0x1000
-
-typedef unsigned char uint8_t;
-typedef unsigned long long uint64_t;
 
 static uint8_t memory[HEAP_SIZE];
 static int heap_initialized = 0;
