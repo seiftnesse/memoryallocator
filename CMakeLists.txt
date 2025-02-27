@@ -1,14 +1,29 @@
 cmake_minimum_required(VERSION 3.14)
-project(CustomAlloc VERSION 1.3.0 LANGUAGES CXX)
+project(CustomAlloc VERSION 1.3.2 LANGUAGES CXX)
 
 # Set C++ standard
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+# Option to enable logging
+option(CUSTOM_ALLOC_ENABLE_LOGGING "Enable logging in CustomAlloc" OFF)
+if(CUSTOM_ALLOC_ENABLE_LOGGING)
+    add_definitions(-DCUSTOM_ALLOC_ENABLE_LOGGING)
+endif()
+
 # Library sources
-set(SOURCES src/CustomAlloc.cpp)
-set(HEADERS include/customalloc/CustomAlloc.h)
+set(SOURCES
+        src/custom_alloc_core.cpp
+        src/custom_alloc_small.cpp
+        src/custom_alloc_util.cpp
+        src/custom_alloc_stats.cpp
+        src/custom_alloc_debug.cpp
+)
+set(HEADERS
+        include/customalloc/custom_alloc.h
+        include/customalloc/custom_alloc_internal.h
+)
 
 # Create library target
 add_library(customalloc ${SOURCES} ${HEADERS})

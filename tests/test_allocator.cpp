@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include <customalloc/CustomAlloc.h>
+#include <customalloc/custom_alloc.h>
 #include <vector>
 #include <algorithm>
 #include <cstring>

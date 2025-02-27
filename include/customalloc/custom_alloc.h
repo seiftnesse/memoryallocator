@@ -28,4 +28,7 @@ void* _malloc_debug(size_t size, const char* file, int line);
 void HeapSetLogFunction(void (*log_func)(const char*, ...));
 void HeapEnableLogging(int enable);
 
+// Zero-on-free configuration function
+void HeapSetZeroOnFree(int depth, size_t shallow_size);
+
 #endif // CUSTOMALLOC_H
