@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.14)
-project(CustomAlloc VERSION 1.3.2 LANGUAGES CXX)
+project(CustomAlloc VERSION 1.3.3 LANGUAGES CXX)
 
 # Set C++ standard
 set(CMAKE_CXX_STANDARD 14)

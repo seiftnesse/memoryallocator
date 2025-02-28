@@ -18,7 +18,7 @@
 #define SMALL_ALLOCATION_THRESHOLD 256  // Allocations under this size use small block allocator
 #define SMALL_BLOCK_SIZE 32       // Size of small blocks
 #define SMALL_POOL_SIZE (1024*1024)  // 1MB small block pool
-#define SEGMENT_MAGIC 0xCAFEBABE  // Magic value for valid segments
+#define SEGMENT_MAGIC 0xCAFEBAFE  // Magic value for valid segments
 
 // Zero-on-free depth options
 #define ZERO_DEPTH_NONE 0        // Don't zero memory on free (fastest)
@@ -86,6 +86,41 @@ extern uint32_t next_allocation_id;
 extern uint32_t small_block_bitmap[SMALL_POOL_SIZE / SMALL_BLOCK_SIZE / 32];
 extern int zero_on_free_depth;
 extern size_t shallow_zero_size;
+
+#define HEADER_GUARD_VALUE 0xFEEDFACE
+#define FOOTER_GUARD_VALUE 0xDEADC0DE
+#define MAX_REASONABLE_BLOCKS (HEAP_SIZE / BLOCK_SIZE)
+
+// Enhanced segment structure with additional integrity fields
+typedef struct {
+    uint32_t header_guard;    // Guard value at the beginning of metadata
+    uint32_t checksum;        // Checksum of critical metadata
+    uint32_t footer_guard;    // Guard value that follows user data
+} segment_integrity_t;
+
+// Calculate metadata checksum for a segment
+uint32_t calculate_segment_checksum(segment_t *s);
+
+// Initialize integrity metadata for a segment
+void initialize_segment_integrity(segment_t *s);
+
+// Verify integrity of a single segment
+int verify_segment_integrity(segment_t *s, int repair);
+
+// Verify integrity of the entire heap
+int verify_heap_integrity(int repair, int *segments_verified, int *segments_repaired);
+
+// Get the integrity structure for a segment
+segment_integrity_t *get_segment_integrity(segment_t *s);
+
+// Get the footer guard address for a segment
+uint32_t *get_segment_footer(segment_t *s);
+
+// Set footer guard value for a segment
+void set_segment_footer(segment_t *s);
+
+// External declaration for the new variables
+extern int integrity_check_level;
 
 // Memory utility functions
 void *_memset(void *dest, int value, size_t count);

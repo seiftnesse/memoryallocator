@@ -48,3 +48,21 @@ add_test(
 set_tests_properties(zero_on_free_test PROPERTIES
         PASS_REGULAR_EXPRESSION "All zero-on-free tests passed!"
 )
+
+# Add the integrity verification test
+add_executable(integrity_test integrity_verification_test.cpp)
+target_link_libraries(integrity_test PRIVATE customalloc)
+
+# Optional: Enable logging for this test
+target_compile_definitions(integrity_test PRIVATE CUSTOM_ALLOC_ENABLE_LOGGING=1)
+
+# Add as a test that can be run with CTest
+add_test(
+        NAME integrity_verification_test
+        COMMAND integrity_test
+)
+
+# Set properties to parse test output
+set_tests_properties(integrity_verification_test PROPERTIES
+        PASS_REGULAR_EXPRESSION "Final integrity check: 0 errors"
+)

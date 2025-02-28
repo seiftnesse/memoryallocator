@@ -31,4 +31,7 @@ void HeapEnableLogging(int enable);
 // Zero-on-free configuration function
 void HeapSetZeroOnFree(int depth, size_t shallow_size);
 
+void HeapSetIntegrityCheckLevel(int level);
+int HeapVerifyIntegrity(int repair);
+
 #endif // CUSTOMALLOC_H

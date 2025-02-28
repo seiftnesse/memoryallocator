@@ -53,6 +53,9 @@ void HeapInit(void *buf, size_t size) {
 
     HEAP_LOG("Heap initialized: addr=%p, size=%zu bytes, blocks=%d\n",
              buf, size, segments->size);
+
+    // Initialize segment integrity metadata
+    initialize_segment_integrity(segments);
 }
 
 // Allocate memory
@@ -116,6 +119,9 @@ void *_malloc(size_t size) {
     // Update allocation statistics
     update_stats_allocate(it->size * BLOCK_SIZE);
 
+    // Update integrity metadata after allocation
+    initialize_segment_integrity(it);
+
     // Return aligned user pointer
     void *result = SegmentToPtr(it);
     HEAP_LOG("Memory allocated: %p, size=%zu bytes, segment=%p\n", result, size, it);
@@ -144,6 +150,9 @@ void _free(void *ptr) {
     }
 
     check_memory_corruption(s);
+
+    // Perform more comprehensive corruption check
+    verify_segment_integrity(s, 1);
 
     // Guard against double-free
     if (s->is_free) {
@@ -290,6 +299,11 @@ void *_realloc(void *ptr, size_t size) {
     // Verify segment integrity
     check_memory_corruption(s);
 
+    int integrity_errors = verify_segment_integrity(s, 1);
+    if (integrity_errors > 0) {
+        HEAP_LOG("Fixed %d integrity errors during free operation\n", integrity_errors);
+    }
+
     // If segment is already marked as free, something went wrong
     if (s->is_free) {
         HEAP_LOG("WARNING: Attempting to realloc an already freed pointer: %p\n", ptr);
@@ -369,6 +383,10 @@ void *_realloc(void *ptr, size_t size) {
 
     // We need to allocate new memory and move the data
     HEAP_LOG("Realloc requires new allocation and data copy\n");
+
+    // Update integrity metadata after reallocation
+    initialize_segment_integrity(s);
+
     void *new_ptr = _malloc(size);
     if (!new_ptr) {
         HEAP_LOG("Realloc failed: could not allocate new memory of size %zu\n", size);
@@ -389,6 +407,7 @@ void *_realloc(void *ptr, size_t size) {
     // Free the old memory
     HEAP_LOG("Freeing original pointer %p after realloc\n", ptr);
     _free(ptr);
+
 
     HEAP_LOG("Realloc succeeded: old=%p, new=%p, size=%zu\n", ptr, new_ptr, size);
     return new_ptr;

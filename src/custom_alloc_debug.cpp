@@ -16,10 +16,13 @@ HeapLogFunction heap_log_function = printf;
 
 // Check for memory corruption in a segment
 void check_memory_corruption(segment_t *s) {
-    if (debug_mode && s && s->magic != SEGMENT_MAGIC) {
-        HEAP_LOG("CORRUPTION: Memory corruption detected in segment %p, fixing magic number\n", s);
-        // For now, we'll just reset the magic number
-        s->magic = SEGMENT_MAGIC;
+    if (!debug_mode || !s) return;
+
+    // Use our new verify_segment_integrity function with repair=1
+    int errors = verify_segment_integrity(s, 1);
+
+    if (errors > 0) {
+        HEAP_LOG("CORRUPTION: Found and repaired %d errors in segment %p\n", errors, s);
     }
 }
 
@@ -152,4 +155,14 @@ void HeapPrintStatus() {
         heap_log_function("==============================\n");
     }
 #endif
+}
+
+// Set the integrity check level
+void HeapSetIntegrityCheckLevel(int level) {
+    if (level >= 0 && level <= 3) {
+        integrity_check_level = level;
+        HEAP_LOG("Integrity check level set to %d\n", level);
+    } else {
+        HEAP_LOG("Invalid integrity check level: %d (valid range: 0-3)\n", level);
+    }
 }

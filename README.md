@@ -160,8 +160,8 @@ This project is licensed under the MIT License - see the LICENSE file for detail
     - Develop more sophisticated address space layout randomization for memory allocations
 - **Security Features**
     - Improve use-after-free detection mechanisms with configurable quarantine system
-    - Implement comprehensive metadata integrity verification
-    - Add configurable zero-on-free depth with performance options
+    - ~~Implement comprehensive metadata integrity verification~~
+    - ~~Add configurable zero-on-free depth with performance options~~
 
 ### Version 1.5
 
